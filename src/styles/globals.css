@@ -1,0 +1,25 @@
+* {
+  box-sizing: border-box;
+  padding: 0;
+  margin: 0;
+}
+
+html,
+body {
+  overflow-x: hidden;
+}
+
+body {
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.wrap {
+  background-image: linear-gradient(-20deg, #b721ff 0%, #21d4fd 100%);
+  min-height: 100vh;
+  max-width: 1000px;
+  margin: 0 auto;
+}
