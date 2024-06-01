@@ -26,7 +26,8 @@ const SignUpPage = () => {
           if (userLocation) {
             const distance = calculateDistance(shopLocation, userLocation);
             if (distance > 500) {
-              alert("Your location is more than 500 meters away from the shop address.");
+              alert("店舗から離れすぎ");
+              return <></>
             }
           }
         }
