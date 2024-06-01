@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
+import Loading from "../../components/common/Loading";
 
 const PasswordForm = dynamic(() => import("../../components/PasswordForm"), {
   ssr: false,
@@ -81,7 +82,7 @@ const SignUpPage = () => {
   return (
     <div>
       {!location ? (
-        <>loading...</>
+        <><Loading /></>
       ) : (
         <>
           {isWithinRange ? (
