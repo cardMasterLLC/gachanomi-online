@@ -13,22 +13,65 @@ const SignUpPage = () => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (shopuid) {
-      console.log(shopuid);
-      fetch(`/api/shop/${shopuid}`)
-        .then((response) => response.json())
-        .then((data) => {
-          if (data.error) {
-            setError(data.error);
-          } else {
-            setShopData(data.shop);
+    const fetchShopData = async () => {
+      try {
+        const response = await fetch(`/api/shop/${shopuid}`);
+        const data = await response.json();
+        if (data.error) {
+          setError(data.error);
+        } else {
+          setShopData(data.shop);
+          const shopLocation = { lat: data.shop.latitude, lng: data.shop.longitude };
+          const userLocation = await getUserLocation();
+          if (userLocation) {
+            const distance = calculateDistance(shopLocation, userLocation);
+            if (distance > 500) {
+              alert("Your location is more than 500 meters away from the shop address.");
+            }
           }
-        })
-        .catch((err) => {
-          setError("Failed to fetch shop data");
-        });
+        }
+      } catch (err) {
+        console.log(err)
+        setError("Failed to fetch shop data");
+      }
+    };
+
+    if (shopuid) {
+      fetchShopData();
     }
   }, [shopuid]);
+
+  const getUserLocation = () => {
+    return new Promise((resolve, reject) => {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          resolve({
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          });
+        },
+        (error) => {
+          reject(error);
+        }
+      );
+    });
+  };
+
+  const calculateDistance = (shopLocation, userLocation) => {
+    const toRad = (value) => (value * Math.PI) / 180;
+    const R = 6371e3; // Earth radius in meters
+    const dLat = toRad(userLocation.lat - shopLocation.lat);
+    const dLng = toRad(userLocation.lng - shopLocation.lng);
+    const lat1 = toRad(shopLocation.lat);
+    const lat2 = toRad(userLocation.lat);
+
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.sin(dLng / 2) * Math.sin(dLng / 2) * Math.cos(lat1) * Math.cos(lat2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    const distance = R * c;
+    return distance;
+  };
 
   return (
     <div>
