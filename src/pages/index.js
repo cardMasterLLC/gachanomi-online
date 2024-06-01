@@ -11,6 +11,8 @@ const SignUpPage = () => {
   const { shopuid } = router.query;
   const [shopData, setShopData] = useState(null);
   const [error, setError] = useState(null);
+  const [location, setLocation] = useState(false);
+  const [isWithinRange, setIsWithinRange] = useState(false);
 
   useEffect(() => {
     const fetchShopData = async () => {
@@ -27,12 +29,14 @@ const SignUpPage = () => {
             const distance = calculateDistance(shopLocation, userLocation);
             if (distance > 500) {
               alert("店舗から離れすぎ");
-              return <></>
+            } else {
+              setIsWithinRange(true);
             }
+            setLocation(true);
           }
         }
       } catch (err) {
-        console.log(err)
+        console.log(err);
         setError("Failed to fetch shop data");
       }
     };
@@ -76,18 +80,30 @@ const SignUpPage = () => {
 
   return (
     <div>
-      <h1>サインアップ</h1>
-      {error && <p>Error: {error}</p>}
-      {shopData ? (
-        <div>
-          <p>Shop UID: {shopuid}</p>
-          <p>Shop Name: {shopData.shopName}</p>
-          {/* 他の店舗情報を表示する */}
-        </div>
+      {!location ? (
+        <>loading...</>
       ) : (
-        <p>Loading...</p>
+        <>
+          {isWithinRange ? (
+            <>
+              <h1>サインアップ</h1>
+              {error && <p>Error: {error}</p>}
+              {shopData ? (
+                <div>
+                  <p>Shop UID: {shopuid}</p>
+                  <p>Shop Name: {shopData.shopName}</p>
+                  {/* 他の店舗情報を表示する */}
+                </div>
+              ) : (
+                <p>Loading...</p>
+              )}
+              <PasswordForm />
+            </>
+          ) : (
+            <p>店舗から500メートル以内でないため、サインアップできません。</p>
+          )}
+        </>
       )}
-      <PasswordForm />
     </div>
   );
 };
