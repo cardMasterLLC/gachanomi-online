@@ -34,6 +34,7 @@ const SignUpPage = () => {
             }
           } catch (err) {
             console.error("位置情報の取得に失敗しました:", err);
+            alert(err.message)
             let errorMessage;
             switch (err.code) {
               case 1:
