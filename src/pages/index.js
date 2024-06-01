@@ -1,19 +1,14 @@
 import React, { useEffect, useState } from "react";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/router";
 import Loading from "../../components/common/Loading";
-
-const PasswordForm = dynamic(() => import("../../components/PasswordForm"), {
-  ssr: false,
-});
+import { calculateDistance, getUserLocation } from "../../libs/location";
 
 const SignUpPage = () => {
   const router = useRouter();
   const { shopuid } = router.query;
   const [shopData, setShopData] = useState(null);
   const [error, setError] = useState(null);
-  const [location, setLocation] = useState(false);
-  const [isWithinRange, setIsWithinRange] = useState(false);
+  const [locationError, setLocationError] = useState(null);
 
   useEffect(() => {
     const fetchShopData = async () => {
@@ -24,16 +19,37 @@ const SignUpPage = () => {
           setError(data.error);
         } else {
           setShopData(data.shop);
-          const shopLocation = { lat: data.shop.latitude, lng: data.shop.longitude };
-          const userLocation = await getUserLocation();
-          if (userLocation) {
-            const distance = calculateDistance(shopLocation, userLocation);
-            if (distance > 500) {
-              alert("店舗から離れすぎ");
-            } else {
-              setIsWithinRange(true);
+          // ========== 緯度軽度の取得と検証 ==========
+          const shopLocation = {
+            lat: data.shop.latitude,
+            lng: data.shop.longitude,
+          };
+          try {
+            console.log("start");
+            const userLocation = await getUserLocation();
+            console.log("userLocation：", userLocation);
+            if (userLocation) {
+              const distance = calculateDistance(shopLocation, userLocation);
+              console.log("distance:", distance);
             }
-            setLocation(true);
+          } catch (err) {
+            console.error("位置情報の取得に失敗しました:", err);
+            let errorMessage;
+            switch (err.code) {
+              case 1:
+                errorMessage = "位置情報の取得が許可されていません。位置情報サービスをオンにしてください。";
+                break;
+              case 2:
+                errorMessage = "位置情報が利用できません。";
+                break;
+              case 3:
+                errorMessage = "位置情報の取得にタイムアウトしました。";
+                break;
+              default:
+                errorMessage = `位置情報の取得に失敗しました: ${err.message}`;
+                break;
+            }
+            setLocationError(errorMessage);
           }
         }
       } catch (err) {
@@ -47,65 +63,21 @@ const SignUpPage = () => {
     }
   }, [shopuid]);
 
-  const getUserLocation = () => {
-    return new Promise((resolve, reject) => {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          resolve({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          });
-        },
-        (error) => {
-          reject(error);
-        }
-      );
-    });
-  };
-
-  const calculateDistance = (shopLocation, userLocation) => {
-    const toRad = (value) => (value * Math.PI) / 180;
-    const R = 6371e3; // Earth radius in meters
-    const dLat = toRad(userLocation.lat - shopLocation.lat);
-    const dLng = toRad(userLocation.lng - shopLocation.lng);
-    const lat1 = toRad(shopLocation.lat);
-    const lat2 = toRad(userLocation.lat);
-
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.sin(dLng / 2) * Math.sin(dLng / 2) * Math.cos(lat1) * Math.cos(lat2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    const distance = R * c;
-    return distance;
-  };
-
   return (
-    <div>
-      {!location ? (
-        <><Loading /></>
+    <>
+      <h1>サインアップ</h1>
+      {error && <p>Error: {error}</p>}
+      {locationError && <p>Error: {locationError}</p>}
+      {shopData ? (
+        <div>
+          <p>Shop UID: {shopuid}</p>
+          <p>Shop Name: {shopData.shopName}</p>
+          {/* 他の店舗情報を表示する */}
+        </div>
       ) : (
-        <>
-          {isWithinRange ? (
-            <>
-              <h1>サインアップ</h1>
-              {error && <p>Error: {error}</p>}
-              {shopData ? (
-                <div>
-                  <p>Shop UID: {shopuid}</p>
-                  <p>Shop Name: {shopData.shopName}</p>
-                  {/* 他の店舗情報を表示する */}
-                </div>
-              ) : (
-                <p>Loading...</p>
-              )}
-              <PasswordForm />
-            </>
-          ) : (
-            <p>店舗から500メートル以内でないため、サインアップできません。</p>
-          )}
-        </>
+        !locationError && <Loading />
       )}
-    </div>
+    </>
   );
 };
 
