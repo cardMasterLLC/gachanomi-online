@@ -5,7 +5,7 @@ import { auth } from "../../../../firebase/client";
 import axios from "axios";
 import { uploadImageToFirebaseStorage } from "../../../../libs/img/uploadImageToFirebaseStorage";
 import Loading from "../../../common/Loading";
-import ToggleButton from "../../../common/toggleButton";
+import ToggleButton from "../../../common/ToggleButton";
 
 const PokemonCardForm = () => {
   const [cardName, setCardName] = useState("");
@@ -101,7 +101,10 @@ const PokemonCardForm = () => {
         </div>
         <div className={styles.group}>
           <label htmlFor="">PSAの有無</label>
-          <ToggleButton isChecked={isPsa} onChange={(e) => setIsPsa(e.target.checked)} />
+          <ToggleButton
+            isChecked={isPsa}
+            onChange={(e) => setIsPsa(e.target.checked)}
+          />
         </div>
         <div className={styles.group}>
           <label htmlFor="thumbnail">画像</label>

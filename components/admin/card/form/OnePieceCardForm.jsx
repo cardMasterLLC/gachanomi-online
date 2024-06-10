@@ -5,7 +5,7 @@ import { auth } from "../../../../firebase/client";
 import axios from "axios";
 import { uploadImageToFirebaseStorage } from "../../../../libs/img/uploadImageToFirebaseStorage";
 import Loading from "../../../common/Loading";
-import ToggleButton from "../../../common/toggleButton";
+import ToggleButton from "../../../common/ToggleButton";
 
 const OnePieceCardForm = () => {
   const [cardName, setCardName] = useState("");
