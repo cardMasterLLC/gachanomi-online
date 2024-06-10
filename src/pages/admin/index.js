@@ -1,87 +1,94 @@
 import React, { useEffect, useState } from "react";
-import styles from "./CreateShop.module.css";
+import styles from "./admin.module.css";
+import Sidebar from "../../../components/admin/Sidebar";
 import { useUser } from "../../../context/authContext";
-import axios from "axios";
-import { auth } from "../../../firebase/client";
+import { parseCookies } from "nookies";
+import admin from "../../../firebase/server";
+import Create from "../../../components/admin/account/Create";
+import ListAndEdit from "../../../components/admin/account/ListAndEdit";
+import CreateCard from "../../../components/admin/card/Create";
+import { useRouter } from "next/router";
+import { logout } from "../../../firebase/client";
 
-const CreateShop = () => {
+const Index = () => {
   const { currentUser, authLoading } = useUser();
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [shopName, setShopName] = useState("");
+  const router = useRouter();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const [selectedComponent, setSelectedComponent] = useState("CreateShop");
 
-    const idToken = await auth.currentUser.getIdToken(true);
-
-    try {
-      await axios.post(
-        "/api/admin/shop/create",
-        {
-          email,
-          password,
-          shopName,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${idToken}`,
-          },
-        }
-      );
-      alert("店舗の作成に成功しました");
-      setEmail("");
-      setPassword("");
-      setShopName("");
-    } catch (error) {
-      alert("店舗の作成に失敗しました");
-      console.error(error);
-    }
-  };
+  useEffect(() => {
+    const authCheck = async () => {
+      if (authLoading) {
+        return null;
+      }
+      if (!authLoading && !currentUser) {
+        await logout();
+      }
+    };
+    authCheck();
+  }, [authLoading, currentUser]);
 
   return (
     <div className={styles.wrap}>
-      <h2>店舗アカウント作成</h2>
+      <div className={styles.side}>
+        <Sidebar
+          setSelectedComponent={setSelectedComponent}
+          selectedComponent={selectedComponent}
+        />
+      </div>
       <div className={styles.main}>
-        <form onSubmit={handleSubmit}>
-          <div className={styles.group}>
-            <label htmlFor="shopName">店舗名</label>
-            <input
-              type="text"
-              id="shopName"
-              name="shopName"
-              placeholder="テスト南店"
-              value={shopName}
-              onChange={(e) => setShopName(e.target.value)}
-            />
-          </div>
-          <div className={styles.group}>
-            <label htmlFor="email">メールアドレス</label>
-            <input
-              type="email"
-              id="email"
-              name="email"
-              placeholder="test@test.com"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div className={styles.group}>
-            <label htmlFor="password">パスワード</label>
-            <input
-              type="text"
-              id="password"
-              name="password"
-              placeholder="6文字以上"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            />
-          </div>
-          <button type="submit">作成</button>
-        </form>
+        <div className={styles.mainHead}>
+          {currentUser ? (
+            currentUser.email
+          ) : (
+            <span style={{ color: "red" }}>※未ログイン</span>
+          )}
+        </div>
+        {selectedComponent === "CreateShop" && <Create />}
+        {selectedComponent === "EditShop" && <ListAndEdit />}
+        {selectedComponent === "CreateCard" && <CreateCard />}
       </div>
     </div>
   );
 };
 
-export default CreateShop;
+export default Index;
+
+export const getServerSideProps = async (ctx) => {
+  const cookies = parseCookies(ctx);
+  const session = cookies.session || "";
+
+  // セッションIDを検証して、認証情報を取得する
+  let decodedClaims;
+  try {
+    const decodedToken = await admin.auth().verifySessionCookie(session, true);
+    decodedClaims = decodedToken;
+  } catch (error) {
+    decodedClaims = null;
+  }
+
+  // セッションが無い場合は、ログイン画面へ遷移させる
+  if (!session) {
+    return {
+      redirect: {
+        destination: "/login?sessionExpired=true",
+        permanent: false,
+      },
+    };
+  }
+
+  // セッションはあるが、role が admin でない場合は、トップページへ遷移させる
+  if (decodedClaims && decodedClaims.role !== "admin") {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
+  // セッションもクレームも問題ない場合は、Adminページへのアクセスを許可
+  return {
+    props: {},
+  };
+};

@@ -1,5 +1,4 @@
 // pages/api/auth/register.js
-import { parseCookies } from "nookies";
 import admin from "../../../../../firebase/server";
 
 export default async function handler(req, res) {
@@ -15,8 +14,11 @@ export default async function handler(req, res) {
 
   // Bearerトークンを抽出
   const idToken = req.headers.authorization.split(" ")[1];
-  const { email, password, shopName } = req.body;
-  console.log(email, password, shopName);
+  const { email, password, shopName, back, memo, latitude, longitude } =
+    req.body;
+
+  const IntLatitude = Number(latitude);
+  const IntLongitude = Number(longitude);
 
   try {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
@@ -37,12 +39,22 @@ export default async function handler(req, res) {
     const userRecord = await admin.auth().createUser(userData);
 
     // Firestoreにユーザー情報を保存
-    await admin.firestore().collection("Shops").doc(userRecord.uid).set({
-      uid: userRecord.uid,
-      email: userRecord.email,
-      createdAt: admin.firestore.FieldValue.serverTimestamp(),
-      shopName: userRecord.displayName,
-    });
+    await admin
+      .firestore()
+      .collection("Shops")
+      .doc(userRecord.uid)
+      .set({
+        uid: userRecord.uid,
+        email: userRecord.email,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        shopName: userRecord.displayName,
+        latitude: IntLatitude,
+        longitude: IntLongitude,
+        back: back,
+        memo: memo,
+        subscription: false,
+        url: `https://gachanomi-online-erjy.vercel.app/?shopuid=${userRecord.uid}`,
+      });
 
     //ログ
     await admin
@@ -55,6 +67,12 @@ export default async function handler(req, res) {
         createdAt: admin.firestore.FieldValue.serverTimestamp(),
         shopName: userRecord.displayName,
         createUser: decodedToken.email,
+        back: back,
+        memo: memo,
+        latitude: IntLatitude,
+        longitude: IntLongitude,
+        subscription: false,
+        url: `https://gachanomi-online-erjy.vercel.app/?shopuid=${userRecord.uid}`,
       });
 
     // ユーザーにカスタムクレームを設定（店舗アカウント用かどうかに応じて）

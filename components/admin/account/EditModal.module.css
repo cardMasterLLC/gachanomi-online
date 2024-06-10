@@ -1,0 +1,52 @@
+.modalOverlay {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow-y: hidden;
+  background-color: rgb(239, 234, 228);
+}
+
+.wrap h2 {
+  text-align: center;
+  padding: 6px;
+}
+
+.main {
+  padding: 24px 0 32px 0;
+}
+
+.main form {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.main form .group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 10px;
+  gap: 4px;
+}
+
+.main form .group label {
+  display: flex;
+  align-items: flex-end;
+  color: rgb(95, 95, 85);
+}
+
+.main form .group label span {
+  font-size: 10px;
+  color: red;
+  padding-left: 8px;
+}
+
+.main form .group label span::before {
+  content: "\203B"; /* ※マークのUnicodeエスケープシーケンス */
+}
+
+.main form button:first-child {
+  margin-top: 24px;
+}
+
+.modalContent {
+  position: relative;
+}

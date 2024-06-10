@@ -1,0 +1,26 @@
+.btn {
+  background: var(--bg);
+  border: none;
+  outline: none;
+  padding: 16px 0;
+  color: #fff;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 2px solid #fff;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  gap: 1px;
+  align-items: center;
+}
+
+.btn span {
+  display: flex;
+  align-items: center;
+  font-size: 20px;
+}
+
+.btn:hover {
+  opacity: 0.7;
+}

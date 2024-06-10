@@ -1,0 +1,22 @@
+.wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.wrap ul li {
+  border-bottom: 1px solid rgba(108, 16, 57, 0.456);
+  padding: 16px 0;
+  text-align: center;
+  cursor: pointer;
+}
+
+.wrap ul li:hover {
+  background-color: rgba(108, 16, 57, 0.456);
+}
+
+.btn {
+  margin-top: auto;
+  margin-bottom: 10px;
+  padding: 0 10px;
+}

@@ -1,0 +1,37 @@
+.wrap {
+  padding: 32px;
+  max-width: 450px;
+  margin: 0 auto;
+}
+
+.selectShop {
+  margin-top: 16px;
+}
+
+.main {
+  margin-top: 40px;
+  height: 100%;
+}
+
+.main h2 {
+  font-size: 20px;
+  text-align: center;
+}
+
+.wrap form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 100%;
+  overflow-y: scroll;
+}
+
+.wrap form .group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.preview {
+  max-width: 100px;
+}
